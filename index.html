@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小数の記念日を決定するためのツール</title>
+    <style>
+        #par > * , .cp_iptxt > label > input {
+            display: block;
+            position: relative;
+            left: 50%;
+            transform: translate(-50%, 0);
+            margin: 8px;
+        }
+        #par {
+            margin: 8px;
+            padding: 8px;
+        }
+
+        .cp_iptxt{position:relative;width:80%;margin:40px 3%}.cp_iptxt input[type='text']{font:15px/24px sans-serif;box-sizing:border-box;width:100%;padding:.3em;transition:.3s;letter-spacing:1px;color:#aaa;border:1px solid #1b2538;border-radius:4px}.ef input[type='text']:focus{border:1px solid #da3c41;outline:0;box-shadow:0 0 5px 1px rgba(218,60,65,.5)}
+    </style>
+</head>
+<body>
+
+<div id="par">
+    <div class="cp_iptxt">
+	    <label class="ef">
+    	<input type="text" placeholder="日付で近似したい小数" id="put">
+	    </label>
+    </div>
+    <div class="cp_iptxt">
+	    <label class="ef">
+    	<input type="text" placeholder="候補の個数" id="times">
+	    </label>
+    </div>
+    <button id="carry">実行</button>
+    <textarea name="console" id="textArea" cols="30" rows="10"></textarea>
+</div>
+
+
+
+
+<script>
+
+"use strict";
+
+const cols_init=70;
+
+window.addEventListener("load",()=>{
+    requestAnimationFrame(()=>{ load(); });
+},false);
+
+function load(){
+    const input=document.getElementById("put");
+    const times=document.getElementById("times");
+    const button=document.getElementById("carry");
+    document.getElementById("textArea").cols=cols_init;
+
+    button.addEventListener("click",()=>{
+        carry(input, times);
+    },false);
+};
+
+function carry(input, _times){
+    const number=Math.abs(Number(input.value));
+    const times=Math.abs(Math.floor(_times.value));
+    const textArea=document.getElementById("textArea");
+    
+    const result=getArray(number, times);
+    textArea.rows=times+2;
+    textArea.cols=cols_init;
+    textArea.value=result;
+};
+
+function getArray(number, times){
+    const null_list=[[2,30],[2,31],[4,31],[6,31],[9,31],[11,31]];
+    const number_list=[];
+    const wrong_ratio=[];
+    let result=``;
+    for(let a=1;a<=12;a++){
+    for(let b=1;b<=31;b++){
+        if(null_list.indexOf([a, b]===-1)){
+            const _1=a/b;
+            const _1_gosa=Math.abs(_1-number)/number;
+            number_list.push([a, b]);
+            wrong_ratio.push(_1_gosa);
+            
+            const _2=b/a;
+            const _2_gosa=Math.abs(_2-number)/number;
+            number_list.push([b, a]);
+            wrong_ratio.push(_2_gosa);
+        };
+    };
+    };
+
+    for(let i=0;i<times;i++){
+        const min=Math.min(...wrong_ratio);
+        const index=wrong_ratio.indexOf(min);
+        let line=``;
+        line=`${line}${number_list[index][0]}, ${number_list[index][1]}, `;
+        line=addBlank(line, 8);
+        line=`${line}誤差：${Math.floor(wrong_ratio[index]*(10**8))/(10**6)}%, `;
+        line=addBlank(line, 22);
+        line=`${line}近似値：${number_list[index][0]/number_list[index][1]}`;
+        result=`${result}${line}\n`;
+        number_list.splice(index, 1);
+        wrong_ratio.splice(index, 1);
+    };
+
+    return result;
+};
+
+function addBlank(_str, n){
+    let str=_str;
+    while(str.length<n){
+        str=`${str} `;
+    };
+    return str;
+};
+
+</script>
+
+</body>
+</html>
